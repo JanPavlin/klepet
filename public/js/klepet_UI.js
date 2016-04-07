@@ -1,7 +1,16 @@
 function divElementEnostavniTekst(sporocilo) {
   var jeSmesko = sporocilo.indexOf('http://sandbox.lavbic.net/teaching/OIS/gradivo/') > -1;
-  if (jeSmesko) {
-    sporocilo = sporocilo.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace('&lt;img', '<img').replace('png\' /&gt;', 'png\' />');
+  var jeDinamicno = false;
+  
+  jeDinamicno |= sporocilo.indexOf( '<img' ) > -1;
+  
+  if ( jeDinamicno ) {
+    var regex = new RegExp( '(png|jpg|gif)(\'|") /&gt;', 'gi' );
+    
+    sporocilo = sporocilo.replace( /\</g, '&lt;' );
+    sporocilo = sporocilo.replace( /\>/g, '&gt;' );
+    sporocilo = sporocilo.replace( /&lt;img/g, '<img' );
+    sporocilo = sporocilo.replace( regex, function ( ext ) { return ext.substr( 0, 4 ) + ' />'; } );
     return $('<div style="font-weight: bold"></div>').html(sporocilo);
   } else {
     return $('<div style="font-weight: bold;"></div>').text(sporocilo);
@@ -14,7 +23,8 @@ function divElementHtmlTekst(sporocilo) {
 
 function procesirajVnosUporabnika(klepetApp, socket) {
   var sporocilo = $('#poslji-sporocilo').val();
-  sporocilo = dodajSmeske(sporocilo);
+    sporocilo = dodajSlike(sporocilo);
+    sporocilo = dodajSmeske(sporocilo);
   var sistemskoSporocilo;
 
   if (sporocilo.charAt(0) == '/') {
@@ -24,6 +34,7 @@ function procesirajVnosUporabnika(klepetApp, socket) {
     }
   } else {
     sporocilo = filtirirajVulgarneBesede(sporocilo);
+    
     klepetApp.posljiSporocilo(trenutniKanal, sporocilo);
     $('#sporocila').append(divElementEnostavniTekst(sporocilo));
     $('#sporocila').scrollTop($('#sporocila').prop('scrollHeight'));
@@ -134,4 +145,25 @@ function dodajSmeske(vhodnoBesedilo) {
       preslikovalnaTabela[smesko] + "' />");
   }
   return vhodnoBesedilo;
+}
+function dodajSlike( vhod )
+{
+        var regex         = new RegExp('\\bhttps?://[a-z%\\-_0-9/:\\.]*\\.(png|gif|jpg)\\b', 'gi');
+       
+        var private       = vhod.startsWith("/private");
+        var seznam = [];
+        var ujemanje         = null;
+        if ( private )
+                vhod = vhod.substr( 0, vhod.lastIndexOf( '"' ) );
+
+        while ( ( ujemanje = regex.exec( vhod ) ) !== null )
+                seznam.push( ujemanje[ 0 ] );
+        
+        for ( var i = 0; i < seznam.length; ++i )
+                vhod += '<img width=\'200\' style=\'margin-left:20px; display:block\' src=\'' + seznam[ i ] + '\' />';
+
+        if ( private )
+                vhod += '"';
+                
+        return vhod;
 }
