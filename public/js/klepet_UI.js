@@ -1,16 +1,15 @@
 function divElementEnostavniTekst(sporocilo) {
   var jeSmesko = sporocilo.indexOf('http://sandbox.lavbic.net/teaching/OIS/gradivo/') > -1;
  var jeDinamicno = false;
+ var jeYoutube = sporocilo.indexOf('<iframe') > -1;
+ 
+ var jeSlika = sporocilo.indexOf('<img ') > -1;
  
   jeDinamicno |= sporocilo.indexOf( '<img' ) > -1;
   
-  if ( jeDinamicno ) {
-    var regex = new RegExp( '(png|jpg|gif)(\'|") /&gt;', 'gi' );
-    
-    sporocilo = sporocilo.replace( /\</g, '&lt;' );
-    sporocilo = sporocilo.replace( /\>/g, '&gt;' );
-    sporocilo = sporocilo.replace( /&lt;img/g, '<img' );
-    sporocilo = sporocilo.replace( regex, function ( ext ) { return ext.substr( 0, 4 ) + ' />'; } );
+  if (jeSmesko||jeSlika) {
+     sporocilo = sporocilo.replace(/\</g, '&lt;').replace(/\>/g, '&gt;');
+   sporocilo = sporocilo.replace(/&lt;img/g, '<img').replace(/jpg' \/&gt;/g, "jpg ' />").replace(/gif' \/&gt;/g, "gif ' />").replace(/png' \/&gt;/g, "png' />"); 
     return $('<div style="font-weight: bold"></div>').html(sporocilo);
   } else {
     return $('<div style="font-weight: bold;"></div>').text(sporocilo);
@@ -124,6 +123,17 @@ $(document).ready(function() {
       $('#poslji-sporocilo').focus();
     });
   });
+  function dodajSlike(vhodnoBesedilo){
+  var exp = vhodnoBesedilo.match(new RegExp("https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg)", "gi"));
+  var dodaj = '';
+ if (exp != null) {
+    for(x in exp){
+      dodaj +=  " <img id = 'slika' src = '" +exp[x]+ "' />";
+    }
+  }
+  vhodnoBesedilo += dodaj;
+  return vhodnoBesedilo;
+} 
 
   socket.on('uporabniki', function(uporabniki) {
     $('#seznam-uporabnikov').empty();
