@@ -1,3 +1,19 @@
+function youtube(vhodnoBesedilo){
+  var tab = vhodnoBesedilo.split(" ");
+  
+  for (var i = 0; i < tab.length; i++){
+    if(tab[i].substring(0,32) === "https://www.youtube.com/watch?v=") {
+      var idVideo = tab[i].substring(32,tab[i].length);
+      $('#sporocila').append('<iframe src="https://www.youtube.com/embed/'+ idVideo+'" style="width: 200px; height: 150px; margin-left: 20px" allowfullscreen></iframe>');
+    }
+    
+  }
+  
+  
+  
+  
+}
+
 function divElementEnostavniTekst(sporocilo) {
   var jeSmesko = sporocilo.indexOf('http://sandbox.lavbic.net/teaching/OIS/gradivo/') > -1;
   if (jeSmesko) {
@@ -26,6 +42,7 @@ function procesirajVnosUporabnika(klepetApp, socket) {
     sporocilo = filtirirajVulgarneBesede(sporocilo);
     klepetApp.posljiSporocilo(trenutniKanal, sporocilo);
     $('#sporocila').append(divElementEnostavniTekst(sporocilo));
+    youtube(sporocilo);
     $('#sporocila').scrollTop($('#sporocila').prop('scrollHeight'));
   }
 
@@ -76,6 +93,7 @@ $(document).ready(function() {
   socket.on('sporocilo', function (sporocilo) {
     var novElement = divElementEnostavniTekst(sporocilo.besedilo);
     $('#sporocila').append(novElement);
+    youtube(sporocilo.besedilo);
   });
   
   socket.on('kanali', function(kanali) {
